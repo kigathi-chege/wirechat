@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" >
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -8,10 +8,9 @@
 
     <title>{{ $title ?? config('app.name', 'Laravel') }}</title>
 
-      <!--THEME:--ADD TO TOP OT PREVENT FLICKERING -->
-      <script>
-
-         /* Function to apply or remove the dark theme */
+    <!--THEME:--ADD TO TOP OT PREVENT FLICKERING -->
+    <script>
+        /* Function to apply or remove the dark theme */
         function updateTheme(isDark) {
             if (isDark) {
                 document.documentElement.classList.add('dark');
@@ -19,11 +18,11 @@
                 document.documentElement.classList.remove('dark');
             }
         }
-    
-        /* Check the initial theme preference */ 
+
+        /* Check the initial theme preference */
         const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         updateTheme(darkModeMediaQuery.matches);
-    
+
         /* listen to changed in (prefers-color-scheme: dark) */
         darkModeMediaQuery.addEventListener('change', (event) => {
             updateTheme(event.matches);
@@ -31,23 +30,25 @@
 
         /* Add This to update theme when page is wire navigated */
         document.addEventListener('livewire:navigated', () => {
-          const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-          updateTheme(darkModeMediaQuery.matches);  // Re-apply the theme based on system preference
-         });
-      </script>
-    
+            const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            updateTheme(darkModeMediaQuery.matches); // Re-apply the theme based on system preference
+        });
+    </script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <!-- Scripts -->
-   
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
     @livewireStyles
     @wirechatStyles
 </head>
 
-<body  x-data x-cloak class="font-sans antialiased">
+<body x-data x-cloak class="font-sans antialiased">
     <div class="min-h-screen bg-[var(--wc-light-primary)] dark:bg-[var(--wc-dark-primary)]">
 
         <!-- Page Content -->
