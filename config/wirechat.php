@@ -89,7 +89,9 @@ return [
     */
     'routes' => [
         'prefix' => 'chats',
-        'middleware' => ['web', 'auth:web'],
+        // 'middleware' => ['web', 'auth:web'],
+        // 'middleware' => ['web'],
+        'middleware' => [],
         'guards' => ['web'],
     ],
 

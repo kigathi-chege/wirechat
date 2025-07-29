@@ -23,6 +23,7 @@ use Namu\WireChat\Livewire\Concerns\Widget;
 use Namu\WireChat\Models\Conversation;
 use Namu\WireChat\Models\Message;
 use Namu\WireChat\Models\Participant;
+use Livewire\Attributes\Url;
 
 /**
  * Chat Component
@@ -41,6 +42,9 @@ class Chat extends Component
     public $conversation;
 
     public $conversationId;
+
+    #[Url]
+    public bool $forceWidget = false;
 
     #[Locked]
     public $TYPE;
@@ -77,8 +81,8 @@ class Chat extends Component
 
         return [
             'refresh' => '$refresh',
-            'echo-private:conversation.'.$conversationId.',.Namu\\WireChat\\Events\\MessageCreated' => 'appendNewMessage',
-            'echo-private:conversation.'.$conversationId.',.Namu\\WireChat\\Events\\MessageDeleted' => 'removeDeletedMessage',
+            'echo-private:conversation.' . $conversationId . ',.Namu\\WireChat\\Events\\MessageCreated' => 'appendNewMessage',
+            'echo-private:conversation.' . $conversationId . ',.Namu\\WireChat\\Events\\MessageDeleted' => 'removeDeletedMessage',
 
             //  'echo-private:conversation.' .$this->conversation->id. ',.Namu\\WireChat\\Events\\MessageDeleted' => 'removeDeletedMessage',
         ];
@@ -162,7 +166,6 @@ class Chat extends Component
         $messageId = null;
         try {
             $messageId = decrypt($id);
-
         } catch (\Throwable $th) {
 
             throw $th;
@@ -305,12 +308,12 @@ class Chat extends Component
     {
         $perMinute = 60;
 
-        if (RateLimiter::tooManyAttempts('send-message:'.auth()->id(), $perMinute)) {
+        if (RateLimiter::tooManyAttempts('send-message:' . auth()->id(), $perMinute)) {
 
             return abort(429, __('wirechat::chat.messages.rate_limit'));
         }
 
-        RateLimiter::increment('send-message:'.auth()->id());
+        RateLimiter::increment('send-message:' . auth()->id());
     }
 
     /**
@@ -359,7 +362,6 @@ class Chat extends Component
                     'media.*' => "max:$mediaMaxUploadSize|mimes:$mediaMimes",
 
                 ]);
-
             } catch (\Illuminate\Validation\ValidationException $th) {
 
                 $errors = $th->errors();
@@ -485,7 +487,6 @@ class Chat extends Component
         $messageId = null;
         try {
             $messageId = decrypt($id);
-
         } catch (\Throwable $th) {
 
             throw $th;
@@ -521,7 +522,6 @@ class Chat extends Component
         $messageId = null;
         try {
             $messageId = decrypt($id);
-
         } catch (\Throwable $th) {
 
             throw $th;
@@ -749,10 +749,11 @@ class Chat extends Component
 
     public function mount($conversation = null)
     {
+        $this->widget = $this->forceWidget;
+
         // dd(config('wirechat.attachments.storage_disk'));
 
         // dd(Storage::disk()->url('/'));
-
         $this->initializeConversation($conversation);
         $this->initializeParticipants();
         $this->finalizeConversationState();
@@ -821,7 +822,6 @@ class Chat extends Component
             $this->receiver = $participant
                 ? $participant->participantable
                 : null;
-
         } else {
             $this->authParticipant = Participant::where('conversation_id', $this->conversation->id)->whereParticipantable($this->auth)->first();
             $this->receiver = null;

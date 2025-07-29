@@ -22,12 +22,12 @@ class BelongsToConversation
 
         $conversation = Conversation::findOrFail($conversationId);
 
-        if (! $user || ! $user->belongsToConversation($conversation)
+        if (
+            ! $user || ! $user->belongsToConversation($conversation)
         ) {
             abort(403, 'Forbidden');
         }
 
         return $next($request);
-
     }
 }
