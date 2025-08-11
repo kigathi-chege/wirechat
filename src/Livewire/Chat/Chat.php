@@ -43,8 +43,11 @@ class Chat extends Component
 
     public $conversationId;
 
-    #[Url]
-    public bool $forceWidget = false;
+    #[Url] // forceWidget
+    public bool $fW = false;
+
+    #[Url] // guestUuid
+    public bool $gU = false;
 
     #[Locked]
     public $TYPE;
@@ -749,7 +752,7 @@ class Chat extends Component
 
     public function mount($conversation = null)
     {
-        $this->widget = $this->forceWidget;
+        $this->widget = $this->fW;
 
         // dd(config('wirechat.attachments.storage_disk'));
 
