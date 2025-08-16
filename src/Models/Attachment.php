@@ -42,6 +42,7 @@ use Namu\WireChat\Facades\WireChat;
 class Attachment extends Model
 {
     use HasFactory;
+    use \Lyre\Traits\BaseModelTrait;
 
     protected $fillable = ['attachable_id', 'attachable_type', 'file_path', 'file_name', 'mime_type', 'url', 'original_name'];
 
@@ -71,7 +72,7 @@ class Attachment extends Model
     protected function url(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, array $attributes) => $this->generateUrl($attributes['file_path'] ?? null)
+            get: fn($value, array $attributes) => $this->generateUrl($attributes['file_path'] ?? null)
         );
     }
 

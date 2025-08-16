@@ -65,6 +65,7 @@ class Message extends Model
     use Actionable;
     use HasFactory;
     use SoftDeletes;
+    use \Lyre\Traits\BaseModelTrait;
 
     public $timestamps = true;
 
@@ -242,7 +243,6 @@ class Message extends Model
         // If conversation is self, then delete permanently directly
         if ($conversation->isSelf()) {
             return $this->forceDelete();
-
         }
 
         // Try to create an action
@@ -262,9 +262,9 @@ class Message extends Model
             foreach ($conversation->participants as $participant) {
                 $deletedByBothParticipants = $deletedByBothParticipants &&
                     $this->actions()
-                        ->whereActor($participant->participantable)
-                        ->where('type', Actions::DELETE)
-                        ->exists();
+                    ->whereActor($participant->participantable)
+                    ->where('type', Actions::DELETE)
+                    ->exists();
             }
 
             if ($deletedByBothParticipants) {
@@ -297,7 +297,6 @@ class Message extends Model
 
             $message->forceDelete();
         }
-
     }
 
     /**

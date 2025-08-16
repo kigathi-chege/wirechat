@@ -59,6 +59,7 @@ class Conversation extends Model
     use Actionable;
     use HasDynamicIds;
     use HasFactory;
+    use \Lyre\Traits\BaseModelTrait;
 
     protected $fillable = [
         'disappearing_started_at',
@@ -195,7 +196,7 @@ class Conversation extends Model
             abort_if(
                 $participant->hasExited(),
                 403,
-                'Cannot add '.$user->display_name.' because they left the group.'
+                'Cannot add ' . $user->display_name . ' because they left the group.'
             );
 
             // Check if the participant was removed by an admin or owner
@@ -204,7 +205,7 @@ class Conversation extends Model
                 abort_if(
                     ! $undoAdminRemovalAction,
                     403,
-                    'Cannot add '.$user->display_name.' because they were removed from the group by an Admin.'
+                    'Cannot add ' . $user->display_name . ' because they were removed from the group by an Admin.'
                 );
 
                 // If undoAdminRemovalAction is true, remove admin removal actions and return the participant
@@ -387,8 +388,9 @@ class Conversation extends Model
 
         // else return participant who is not the reference
         /** @var Participant|null $peer */
-        $peer = $participants->reject(fn ($participant) => $participant->participantable_id == $reference->getKey() &&
-            $participant->participantable_type == $reference->getMorphClass()
+        $peer = $participants->reject(
+            fn($participant) => $participant->participantable_id == $reference->getKey() &&
+                $participant->participantable_type == $reference->getMorphClass()
         )->first();
 
         return $peer;
@@ -412,8 +414,9 @@ class Conversation extends Model
 
         // Check if 'participants' relationship is already loaded
         if ($this->relationLoaded('participants')) {
-            return collect($this->participants)->reject(fn ($participant) => $participant->participantable_id == $reference->getKey() &&
-                $participant->participantable_type == $reference->getMorphClass()
+            return collect($this->participants)->reject(
+                fn($participant) => $participant->participantable_id == $reference->getKey() &&
+                    $participant->participantable_type == $reference->getMorphClass()
             );
         }
 
@@ -533,7 +536,6 @@ class Conversation extends Model
         if (! $participant) {
             // If the participant is not found, return an empty collection
             return new \Illuminate\Database\Eloquent\Collection;
-
         }
 
         $lastReadAt = $participant->conversation_read_at;

@@ -52,6 +52,7 @@ use Namu\WireChat\Facades\WireChat;
 class Group extends Model
 {
     use HasFactory;
+    use \Lyre\Traits\BaseModelTrait;
 
     protected $fillable = [
         'conversation_id',
@@ -89,7 +90,6 @@ class Group extends Model
                     Storage::disk(WireChat::storageDisk())->delete($group->cover->file_path);
                 }
             }
-
         });
     }
 
@@ -111,7 +111,6 @@ class Group extends Model
     public function getCoverUrlAttribute(): ?string
     {
         return $this->cover?->url;
-
     }
 
     /**

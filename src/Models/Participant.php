@@ -64,6 +64,7 @@ class Participant extends Model
 {
     use Actionable;
     use HasFactory;
+    use \Lyre\Traits\BaseModelTrait;
 
     protected $fillable = [
         'conversation_id',

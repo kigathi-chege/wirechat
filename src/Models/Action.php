@@ -42,6 +42,7 @@ use Namu\WireChat\Facades\WireChat;
 class Action extends Model
 {
     use HasFactory;
+    use \Lyre\Traits\BaseModelTrait;
 
     protected $fillable = [
         'actor_id',
@@ -91,7 +92,6 @@ class Action extends Model
     {
 
         $query->where('actor_id', $actor->getKey())->where('actor_type', $actor->getMorphClass());
-
     }
 
     /**
