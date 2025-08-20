@@ -5,6 +5,7 @@ namespace Namu\WireChat\Traits;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Namu\WireChat\Enums\ConversationType;
@@ -413,49 +414,68 @@ trait Chatable
     }
 
     /**
-     * Search for users who are eligible to participate in a conversation.
+     * Search for model records that are eligible to participate in a conversation.
      * This method can be customized to include additional filtering logic,
      * such as limiting results to friends, followers, or other specific groups.
      *
      * @param  string  $query  The search term to match against user fields.
-     * @return Collection|null A collection of users matching the search criteria,
+     * @return SupportCollection|null A collection of models matching the search criteria,
      *                         or null if no matches are found.
      */
-    public function searchChatables(string $query): ?Collection
+    public function searchChatables(string $query): ?SupportCollection
     {
+        // Return null if the search query is blank or the user model is unavailable.
+        if (blank($query)) {
+            return null;
+        }
+
         // Retrieve the fields that are searchable for users.
         $searchableFields = WireChat::searchableFields();
 
         // Get the user model from the configuration, defaulting to App\Models\User.
-        $userModel = app(config('wirechat.user_model', \App\Models\User::class));
+        // $userModel = app(config('wirechat.user_model', \App\Models\User::class));
 
-        // Return null if the search query is blank or the user model is unavailable.
-        if (blank($query) || ! $userModel) {
-            return null;
+        // Retrieve all chatable models from config (e.g., [User::class, Assistant::class]).
+        $chatableModels = config('wirechat.chatables', [
+            \App\Models\User::class,
+        ]);
+
+        // Initialize the result collection.
+        $results = collect();
+
+        foreach ($chatableModels as $chatableModel) {
+
+            if (! $chatableModel) {
+                continue;
+            }
+
+            // Initialize cache for column checks.
+            $columnCache = [];
+
+            $result = $chatableModel::where(function ($queryBuilder) use ($searchableFields, $query, &$columnCache) {
+                // Get the table name for the user model.
+                $table = $queryBuilder->getModel()->getTable();
+
+                // Iterate over searchable fields.
+                foreach ($searchableFields as $field) {
+                    // Check if column existence is already cached for the table.
+                    if (! isset($columnCache[$table])) {
+                        $columnCache[$table] = Schema::getColumnListing($table);
+                    }
+
+                    // Only perform the search if the field exists in the table.
+                    if (in_array($field, $columnCache[$table])) {
+                        $queryBuilder->orWhere($field, 'LIKE', '%' . $query . '%');
+                    }
+                }
+            })
+                ->limit(20)
+                ->get();
+
+            $results = $results->merge($result);
         }
 
-        // Initialize cache for column checks.
-        $columnCache = [];
-
-        return $userModel::where(function ($queryBuilder) use ($searchableFields, $query, &$columnCache) {
-            // Get the table name for the user model.
-            $table = $queryBuilder->getModel()->getTable();
-
-            // Iterate over searchable fields.
-            foreach ($searchableFields as $field) {
-                // Check if column existence is already cached for the table.
-                if (! isset($columnCache[$table])) {
-                    $columnCache[$table] = Schema::getColumnListing($table);
-                }
-
-                // Only perform the search if the field exists in the table.
-                if (in_array($field, $columnCache[$table])) {
-                    $queryBuilder->orWhere($field, 'LIKE', '%'.$query.'%');
-                }
-            }
-        })
-            ->limit(20)
-            ->get();
+        return $results;
     }
 
     /**

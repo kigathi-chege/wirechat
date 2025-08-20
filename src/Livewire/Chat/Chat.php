@@ -268,6 +268,23 @@ class Chat extends Component
         );
     }
 
+    /**
+     * New thread
+     */
+    public function newThread()
+    {
+        $activeThread = \App\Models\OpenAIThread::where([
+            "status" => "active",
+            "conversation_id" => $this->conversation->id
+        ])->first();
+
+        if ($activeThread) {
+            $activeThread->update([
+                "status" => "inactive"
+            ]);
+        }
+    }
+
     public function messages(): array
     {
         return [
