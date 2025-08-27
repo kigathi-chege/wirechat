@@ -260,6 +260,23 @@ class Conversation extends Model
         return $this->hasOne(Message::class, 'conversation_id')->latestOfMany();
     }
 
+    public function openAIThreads(): HasMany
+    {
+        return $this->hasMany(\App\Models\OpenAIThread::class);
+    }
+
+    public function openAIThreadRuns()
+    {
+        return $this->hasManyThrough(
+            \App\Models\OpenAIThreadRun::class,
+            \App\Models\OpenAIThread::class,
+            'conversation_id', // Foreign key on OpenAIThread table
+            'open_a_i_thread_id', // Foreign key on OpenAIThreadRun table
+            'id', // Local key on Conversation
+            'id'  // Local key on OpenAIThread
+        );
+    }
+
     /**
      * ------------------------
      * SCOPES

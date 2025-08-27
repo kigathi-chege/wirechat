@@ -420,6 +420,10 @@ class Chat extends Component
                     // 'body' => $this->body, // Add body if required
                 ]);
 
+                if (tenant()) {
+                    $message->associateWithTenant(tenant());
+                }
+
                 // Create and associate the attachment with the message
                 $attachment = $message->attachment()->create([
                     'file_path' => $path,
@@ -428,6 +432,10 @@ class Chat extends Component
                     'mime_type' => $attachment->getMimeType(),
                     'url' => Storage::disk(WireChat::storageDisk())->url($path), // Use disk and path
                 ]);
+
+                if (tenant()) {
+                    $attachment->associateWithTenant(tenant());
+                }
 
                 // dd($attachment);
 
@@ -466,6 +474,10 @@ class Chat extends Component
                 'body' => $this->body,
                 'type' => MessageType::TEXT,
             ]);
+
+            if (tenant()) {
+                $createdMessage->associateWithTenant(tenant());
+            }
 
             // push the message
             $this->pushMessage($createdMessage);

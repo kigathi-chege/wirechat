@@ -74,6 +74,9 @@ class Message extends Model
         'sendable_type',
         'sendable_id',
         'conversation_id',
+        'openai_id',
+        'open_a_i_thread_run_id',
+        'openai_thread_run_id',
         'reply_id',
         'type',
         'kept_at',
@@ -96,6 +99,11 @@ class Message extends Model
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
+    }
+
+    public function openAIThreadRun(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\OpenAIThreadRun::class, 'openai_thread_run_id', 'openai_id');
     }
 
     /* Polymorphic relationship for the sender */

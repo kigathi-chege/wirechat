@@ -101,7 +101,7 @@ trait Chatable
         $existingConversation->save();
 
         // Add the authenticated user as a participant
-        Participant::create([
+        $authenticatedParticipant = Participant::create([
             'conversation_id' => $existingConversation->id,
             'participantable_id' => $authenticatedUserId,
             'participantable_type' => $authenticatedUserType,
@@ -110,22 +110,35 @@ trait Chatable
 
         // For non-self conversations, add the other participant
         if (! $selfConversationCheck) {
-            Participant::create([
+            $secondaryParticipant = Participant::create([
                 'conversation_id' => $existingConversation->id,
                 'participantable_id' => $participantId,
                 'participantable_type' => $participantType,
                 'role' => ParticipantRole::OWNER,
             ]);
+
+            if (tenant()) {
+                $secondaryParticipant->associateWithTenant(tenant());
+            }
         }
 
         // Create an initial message if provided
         if (! empty($message)) {
-            Message::create([
+            $initialMessage = Message::create([
                 'sendable_id' => $authenticatedUserId,
                 'sendable_type' => $authenticatedUserType,
                 'conversation_id' => $existingConversation->id,
                 'body' => $message,
             ]);
+
+            if (tenant()) {
+                $initialMessage->associateWithTenant(tenant());
+            }
+        }
+
+        if (tenant()) {
+            $existingConversation->associateWithTenant(tenant());
+            $authenticatedParticipant->associateWithTenant(tenant());
         }
 
         return $existingConversation;
@@ -162,22 +175,32 @@ trait Chatable
             $path = $photo->store(WireChat::storageFolder(), WireChat::storageDisk());
 
             // create attachment
-            $group->cover()->create([
+            $attachment = $group->cover()->create([
                 'file_path' => $path,
                 'file_name' => basename($path),
                 'original_name' => $photo->getClientOriginalName(),
                 'mime_type' => $photo->getMimeType(),
                 'url' => Storage::disk(WireChat::storageDisk())->url($path),
             ]);
+
+            if (tenant()) {
+                $attachment->associateWithTenant(tenant());
+            }
         }
 
         // create participant as owner
-        Participant::create([
+        $ownerParticipant = Participant::create([
             'conversation_id' => $conversation->id,
             'participantable_id' => $this->id,
             'participantable_type' => $this->getMorphClass(),
             'role' => ParticipantRole::OWNER,
         ]);
+
+        if (tenant()) {
+            $conversation->associateWithTenant(tenant());
+            $group->associateWithTenant(tenant());
+            $ownerParticipant->associateWithTenant(tenant());
+        }
 
         return $conversation;
     }
@@ -232,6 +255,10 @@ trait Chatable
                 'sendable_id' => $this->id, // Polymorphic sender ID
                 'body' => $message,
             ]);
+
+            if (tenant()) {
+                $createdMessage->associateWithTenant(tenant());
+            }
 
             // update auth participant last active
             $participant = $conversation->participant($this);
