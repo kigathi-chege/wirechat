@@ -177,9 +177,11 @@ class Chat extends Component
         $message = Message::where('id', $messageId)->firstOrFail();
 
         // check if user belongs to message
+        logger("Auth belongs to conversation:", [$this->auth->belongsToConversation($this->conversation)]);
         abort_unless($this->auth->belongsToConversation($this->conversation), 403);
 
         // abort if message does not belong to this conversation or is not owned by any participant
+        logger("Message belongs to conversation:", [$message->conversation_id == $this->conversation->id]);
         abort_unless($message->conversation_id == $this->conversation->id, 403);
 
         // Set owner as Id we are replying to
@@ -305,11 +307,12 @@ class Chat extends Component
 
         $auth = $this->auth;
 
-        // make sure conversation is neigher self nor private
-
+        // make sure conversation is neither self nor private
+        logger("Conversation is group:", [$this->conversation->isGroup()]);
         abort_unless($this->conversation->isGroup(), 403, __('wirechat::chat.messages.cannot_exit_self_or_private_conversation'));
 
         // make sure owner if group cannot be removed from chat
+        logger("Auth is owner of conversation:", [$auth->isOwnerOf($this->conversation)]);
         abort_if($auth->isOwnerOf($this->conversation), 403, __('wirechat::chat.messages.owner_cannot_exit_conversation'));
 
         // delete conversation
@@ -531,6 +534,7 @@ class Chat extends Component
 
         // make sure user belongs to conversation from the message
         // We are checking the $message->conversation for extra security because the param might be tempered with
+        logger("Auth belongs to conversation:", [$this->auth->belongsToConversation($message->conversation)]);
         abort_unless($this->auth->belongsToConversation($message->conversation), 403);
 
         // remove message from collection
@@ -567,10 +571,12 @@ class Chat extends Component
         abort_unless(auth()->check(), 401);
 
         // make sure user owns message OR allow if is admin in group
+        logger("Auth owns message:", [$message->ownedBy($this->auth)]);
         abort_unless($message->ownedBy($this->auth) || ($authParticipant->isAdmin() && $this->conversation->isGroup()), 403);
 
         // make sure user belongs to conversation from the message
         // We are checking the $message->conversation for extra security because the  might be tempered with
+        logger("Auth belongs to conversation:", [$this->auth->belongsToConversation($message->conversation)]);
         abort_unless($this->auth->belongsToConversation($message->conversation), 403);
 
         // remove message from collection
@@ -815,6 +821,8 @@ class Chat extends Component
 
         // $this->conversation = Conversation::where('id', $conversation)->firstOr(fn () => abort(404));
         $this->totalMessageCount = Message::where('conversation_id', $this->conversation->id)->count();
+
+        logger("Auth belongs to conversation:", [$this->auth->belongsToConversation($this->conversation)]);
         abort_unless($this->auth->belongsToConversation($this->conversation), 403);
     }
 
