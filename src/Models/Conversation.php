@@ -252,7 +252,7 @@ class Conversation extends Model
      */
     public function messages(): hasMany
     {
-        return $this->hasMany(Message::class);
+        return $this->hasMany(Message::class)->orderBy('created_at', 'asc');
     }
 
     public function lastMessage(): hasOne
